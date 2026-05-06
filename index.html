@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestra Boda | Fabián & Luz Aida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F7F5F0;
+            color: #2D3748;
+            margin: 0;
+            padding: 0;
+        }
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+        
+        .hero-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
+                              url("WhatsApp\ Image\ 2026-05-05\ at\ 7.49.41\ PM.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+        }
+        
+        .tab-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 700; 
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 50%;
+            background-color: #4A7C59;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .tab-btn.active::after { width: 100%; }
+        .tab-btn.active { color: #4A7C59; }
+        
+        .section-view {
+            display: none;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .section-view.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .interactive-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .photo-frame {
+            border: 8px solid white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: rotate(-1deg);
+            transition: transform 0.3s ease;
+        }
+        .photo-frame:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        .gemini-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.95));
+            border: 1px solid #cbd5e1;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4A7C59;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* NAVEGACIÓN POR FLECHAS */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.3s ease;
+            color: #4A7C59;
+            font-weight: bold;
+            border: 1px solid #eee;
+        }
+        .nav-arrow:hover {
+            background: #4A7C59;
+            color: white;
+            scale: 1.1;
+        }
+        .arrow-left { left: 10px; }
+        .arrow-right { right: 10px; }
+
+        /* ESTILOS DEL REPRODUCTOR DE MÚSICA */
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #D4AF37;
+        }
+        .music-info {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4A7C59;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4A7C59;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .music-btn:hover {
+            transform: scale(1.1);
+            background: #355b40;
+        }
+        .music-waves {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 15px;
+        }
+        .wave {
+            width: 3px;
+            background: #D4AF37;
+            height: 5px;
+            animation: wave-anim 1s ease-in-out infinite alternate;
+        }
+        .wave:nth-child(2) { animation-delay: 0.2s; }
+        .wave:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes wave-anim {
+            from { height: 5px; }
+            to { height: 15px; }
+        }
+        .waves-paused .wave {
+            animation-play-state: paused;
+            height: 5px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-8">
+
+    <div class="hero-bg"></div>
+
+    <!-- REPRODUCTOR DE AUDIO -->
+    <div class="music-control">
+        <div class="music-info hidden sm:block">
+            Día Tras Día - Andrés Cepeda
+        </div>
+        <div id="music-waves" class="music-waves waves-paused px-1">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        <button onclick="toggleMusic()" id="music-toggle-btn" class="music-btn">
+            <span id="music-icon" style="font-size: 14px;">▶</span>
+        </button>
+        <audio id="bg-music" loop>
+            <source src="andres-cepeda.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <div class="relative w-full max-w-4xl bg-white/70 rounded-3xl shadow-2xl overflow-hidden border border-white/50 backdrop-blur-sm">
+        
+        <!-- Flechas de navegación -->
+        <button onclick="navigate('prev')" class="nav-arrow arrow-left hidden sm:flex" id="arrow-prev">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button onclick="navigate('next')" class="nav-arrow arrow-right hidden sm:flex" id="arrow-next">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <header class="relative pt-12 pb-8 px-6 text-center border-b border-gray-100/50 bg-gradient-to-b from-white/60 to-transparent">
+            <div class="text-[#D4AF37] text-2xl mb-2">✨ 💍 ✨</div>
+            <h1 class="font-serif text-[#4A7C59] font-semibold mb-2">
+                <span class="font-cursive text-7xl sm:text-8xl block mb-2 drop-shadow-md">Fabián & Luz Aida</span>
+            </h1>
+            
+            <div class="flex justify-center my-6">
+                <div class="photo-frame overflow-hidden rounded-sm w-64 h-80 sm:w-72 sm:h-96 bg-gray-200">
+                    <!-- URL de placeholder por si la imagen de WhatsApp no carga localmente -->
+                    <img src="WhatsApp Image 2026-05-05 at 7.49.41 PM.jpeg" onerror="this.src='https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop'" alt="Fabián y Luz Aida" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <p class="mt-4 text-3xl md:text-4xl font-black italic tracking-widest text-center" style="color: #d4af37; font-family: 'Cormorant Garamond', serif;">
+                ✨ NUESTRA BODA ✨
+            </p>
+
+            <div class="mt-8 inline-flex flex-wrap justify-center gap-4 text-center">
+                <div class="bg-white/90 px-4 py-2 rounded-xl shadow-sm border border-gray-100 min-w-[80px]">
+                    <span id="days" class="font-serif text-3xl text-[#4A7C59] block font-bold">00</span>
+                    <span class="text-xs uppercase tracking-wider text-gray-500 font-bold">Días</span>
+                </div>
+                <div class="bg-white/90 px-4 py-2 rounded-xl shadow-sm border border-gray-100 min-w-[80px]">
+                    <span id="hours" class="font-serif text-3xl text-[#4A7C59] block font-bold">00</span>
+                    <span class="text-xs uppercase tracking-wider text-gray-500 font-bold">Hrs</span>
+                </div>
+                <div class="bg-white/90 px-4 py-2 rounded-xl shadow-sm border border-gray-100 min-w-[80px]">
+                    <span id="minutes" class="font-serif text-3xl text-[#4A7C59] block font-bold">00</span>
+                    <span class="text-xs uppercase tracking-wider text-gray-500 font-bold">Min</span>
+                </div>
+                <div class="bg-white/90 px-4 py-2 rounded-xl shadow-sm border border-gray-100 min-w-[80px]">
+                    <span id="seconds" class="font-serif text-3xl text-[#4A7C59] block font-bold">00</span>
+                    <span class="text-xs uppercase tracking-wider text-gray-500 font-bold">Seg</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="relative flex border-b border-gray-200 bg-white/80">
+            <button onclick="switchTab('evento')" id="btn-evento" class="tab-btn active flex-1 py-4 text-xs sm:text-base uppercase tracking-wider text-gray-600 hover:text-[#4A7C59]">El Evento</button>
+            <button onclick="switchTab('aventura')" id="btn-aventura" class="tab-btn flex-1 py-4 text-xs sm:text-base uppercase tracking-wider text-gray-600 hover:text-[#4A7C59]">Aventura</button>
+            <button onclick="switchTab('ia')" id="btn-ia" class="tab-btn flex-1 py-4 text-xs sm:text-base uppercase tracking-wider text-gray-600 hover:text-[#4A7C59]">✨ Dedicatoria</button>
+            <button onclick="switchTab('detalles')" id="btn-detalles" class="tab-btn flex-1 py-4 text-xs sm:text-base uppercase tracking-wider text-gray-600 hover:text-[#4A7C59]">Asistencia</button>
+        </nav>
+
+        <main class="relative p-6 sm:p-10 bg-transparent min-h-[450px]">
+            
+            <section id="evento" class="section-view active">
+                <div class="text-center mb-10">
+                    <p class="text-gray-900 leading-relaxed max-w-2xl mx-auto italic font-serif text-3xl mb-4 font-bold drop-shadow-md">
+                        "Lo que Dios une, que no lo separe el hombre."
+                  </p>
+<p class="leading-relaxed max-w-2xl mx-auto text-lg md:text-xl font-bold text-center"
+   style="font-family: 'Cormorant Garamond', serif; color: #000000; letter-spacing: 0.5px;">
+   💍 Con amor y alegría, te invitamos a ser parte <br>
+   de uno de los momentos más importantes de nuestras vidas ✨
+</p>
+</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="interactive-card p-6 rounded-2xl text-center">
+                        <div class="text-3xl mb-3">⛪</div>
+                        <h3 class="font-serif text-xl text-[#4A7C59] mb-2 font-bold">Ceremonia</h3>
+                        <p class="text-gray-900 font-bold leading-tight">Parroquia del Sagrado Corazón de Jesús</p>
+                        <p class="text-gray-700 text-sm mt-1 italic font-bold">Sábado, 27 de Junio</p>
+                        <p class="text-[#D4AF37] font-bold mt-2">6:00 PM</p>
+                    </div>
+
+                    <div class="interactive-card p-6 rounded-2xl text-center">
+                        <div class="text-3xl mb-3">🍾</div>
+                        <h3 class="font-serif text-xl text-[#4A7C59] mb-2 font-bold">Recepción</h3>
+                        <p class="text-gray-900 font-bold">Banquetes Sazón Gourmet</p>
+                        <p class="text-gray-700 text-sm mt-1 italic font-bold">Calle 21 No 21-20</p>
+                        <p class="text-[#D4AF37] font-bold mt-2">7:00 PM</p>
+                    </div>
+
+                    <div class="interactive-card p-6 rounded-2xl text-center">
+                        <div class="text-3xl mb-3">👗</div>
+                        <h3 class="font-serif text-xl text-[#4A7C59] mb-2 font-bold">Dress Code</h3>
+                        <p class="text-gray-900 font-bold">Traje Formal</p>
+                        <p class="text-gray-600 text-xs mt-1 font-bold">Luce tu mejor gala para este día</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="aventura" class="section-view">
+                <div class="text-center mb-6">
+                    <h2 class="font-serif text-4xl text-[#4A7C59] mb-4 font-bold italic">"El matrimonio no es una meta..."</h2>
+                    <p class="text-2xl text-[#D4AF37] font-bold italic mb-8">"...es un camino lleno de aventuras compartidas." ✨</p>
+                </div>
+                <div class="chart-container bg-white/80 p-4 rounded-3xl shadow-lg border border-white">
+                    <canvas id="adventureChart"></canvas>
+                </div>
+                <div id="chart-insight" class="mt-6 p-4 bg-white/95 rounded-xl text-center text-base text-[#2D3748] border border-[#4A7C59] border-opacity-30 min-h-[60px] flex items-center justify-center font-bold shadow-md">
+                    Toca las secciones del gráfico para ver nuestros pilares.
+                </div>
+            </section>
+
+            <section id="ia" class="section-view">
+                <div class="max-w-2xl mx-auto space-y-8">
+                    <div class="text-center">
+                        <h2 class="font-serif text-3xl text-[#4A7C59] mb-2 font-bold">✨ Mensaje Especial</h2>
+                        <p class="text-gray-600 text-sm font-bold italic">¿Deseas dejarnos una dedicatoria? Gemini IA te ayuda.</p>
+                    </div>
+
+                    <div class="gemini-box p-8 rounded-3xl shadow-md space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">✍️</span>
+                            <h3 class="font-bold text-[#4A7C59]">Generador de Mensajes IA ✨</h3>
+                        </div>
+                        <p class="text-xs text-gray-600 font-bold">Escribe tu nombre y generaremos un mensaje personalizado para nuestra unión.</p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input id="guestName" type="text" placeholder="Escribe tu nombre..." class="flex-1 p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-[#4A7C59] outline-none">
+                            <button onclick="generateWishes()" class="bg-[#4A7C59] text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#355b40] transition-transform">✨ Crear</button>
+                        </div>
+                        <div id="wishesResult" class="hidden p-6 bg-white rounded-2xl border border-[#4A7C59]/20 italic text-lg text-gray-800 leading-relaxed font-serif shadow-inner"></div>
+                        <div id="wishesLoader" class="hidden text-center p-4"><div class="loader"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="detalles" class="section-view">
+                <div class="max-w-xl mx-auto text-center">
+                    <div class="bg-white/95 rounded-3xl p-8 mb-8 border border-[#4A7C59] border-opacity-40 shadow-xl">
+                        <h3 class="font-serif text-3xl text-[#4A7C59] mb-4 font-bold"><span>💌</span> Lluvia de Sobres</h3>
+                        <p class="text-gray-600 font-medium mb-6">
+                        <h3 class="font-serif text-2xl text-[#4A7C59] mb-4 font-bold uppercase">Confirmar Asistencia</h3>
+                        <div class="flex flex-col gap-4 justify-center mt-6">
+                            <a href="https://wa.me/573117810600" target="_blank" class="flex items-center justify-center gap-3 bg-[#4A7C59] text-white px-6 py-4 rounded-full shadow-lg hover:scale-105 transition-transform">
+                                <span class="font-bold text-xl">Confirmar Vía WhatsApp</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Indicador de pasos inferior para móvil -->
+        <div class="flex justify-center pb-6 gap-2">
+            <div class="w-2 h-2 rounded-full bg-[#4A7C59]" id="dot-0"></div>
+            <div class="w-2 h-2 rounded-full bg-gray-300" id="dot-1"></div>
+            <div class="w-2 h-2 rounded-full bg-gray-300" id="dot-2"></div>
+            <div class="w-2 h-2 rounded-full bg-gray-300" id="dot-3"></div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+        const tabs = ['evento', 'aventura', 'ia', 'detalles'];
+        let currentTabIndex = 0;
+
+        function updateDots() {
+            tabs.forEach((tab, index) => {
+                const dot = document.getElementById(`dot-${index}`);
+                if(index === currentTabIndex) {
+                    dot.classList.add('bg-[#4A7C59]');
+                    dot.classList.remove('bg-gray-300');
+                } else {
+                    dot.classList.remove('bg-[#4A7C59]');
+                    dot.classList.add('bg-gray-300');
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            currentTabIndex = tabs.indexOf(tabId);
+            
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const sections = document.querySelectorAll('.section-view');
+
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            sections.forEach(sec => sec.classList.remove('active'));
+            
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'aventura' && window.myChart) { window.myChart.update(); }
+            updateDots();
+        }
+
+        function navigate(direction) {
+            if (direction === 'next') {
+                currentTabIndex = (currentTabIndex + 1) % tabs.length;
+            } else {
+                currentTabIndex = (currentTabIndex - 1 + tabs.length) % tabs.length;
+            }
+            switchTab(tabs[currentTabIndex]);
+        }
+
+        /* LÓGICA DE MÚSICA */
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            const waves = document.getElementById('music-waves');
+            
+            if (music.paused) {
+                music.play().catch(e => console.log("Audio interact required"));
+                icon.innerText = 'II';
+                waves.classList.remove('waves-paused');
+            } else {
+                music.pause();
+                icon.innerText = '▶';
+                waves.classList.add('waves-paused');
+            }
+        }
+
+        /* COUNTDOWN */
+        const countDownDate = new Date("Jun 27, 2026 18:00:00").getTime();
+        setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+            if (distance < 0) return;
+            
+            document.getElementById("days").innerHTML = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            document.getElementById("hours").innerHTML = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            document.getElementById("minutes").innerHTML = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+            document.getElementById("seconds").innerHTML = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        }, 1000);
+
+        /* GEMINI IA */
+        async function callGemini(prompt, systemPrompt = "") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "¡Felicidades a la hermosa pareja!";
+            } catch (error) {
+                return "¡Muchas felicidades Fabián y Luz Aida en este gran paso!";
+            }
+        }
+
+        async function generateWishes() {
+            const name = document.getElementById('guestName').value || "un invitado";
+            const resultDiv = document.getElementById('wishesResult');
+            const loader = document.getElementById('wishesLoader');
+            resultDiv.classList.add('hidden');
+            loader.classList.remove('hidden');
+            const text = await callGemini(`Genera un mensaje de felicitación corto y elegante de parte de ${name} para Fabián y Luz Aida por su boda.`, "Asistente de bodas poético y alegre.");
+            loader.classList.add('hidden');
+            resultDiv.innerText = text;
+            resultDiv.classList.remove('hidden');
+        }
+
+        /* GRÁFICO DE AVENTURA */
+        const ctx = document.getElementById('adventureChart').getContext('2d');
+        window.myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Amor & Respeto', 'Aventuras', 'Complicidad', 'Fe'],
+                datasets: [{
+                    data: [35, 25, 25, 15],
+                    backgroundColor: ['#4A7C59', '#D4AF37', '#8BA895', '#C4D4C8'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 10 } } }
+                },
+                onClick: (evt, item) => {
+                    if(item.length > 0) {
+                        const index = item[0].index;
+                        const msgs = [
+                            "Nuestro motor principal: El amor incondicional.",
+                            "Listos para viajar y conocer el mundo juntos.",
+                            "Seremos los mejores amigos por siempre.",
+                            "Dios es el centro de nuestro hogar."
+                        ];
+                        document.getElementById('chart-insight').innerText = msgs[index];
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
